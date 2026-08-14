@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f1419; min-height: 100vh; display: flex;
+      justify-content: center; align-items: center;
+      font-family: 'Segoe UI', system-ui, sans-serif; color: #e7e9ea;
+    }
+    .wrap {
+      background: #16202a; border: 1px solid #2f3b47; border-radius: 12px;
+      padding: 24px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+    h1 { color: #f2b179; font-size: 28px; margin-bottom: 12px; letter-spacing: .04em; }
+    .top { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; }
+    .box {
+      background: #1c2733; border-radius: 8px; padding: 8px 18px; min-width: 90px;
+    }
+    .box span { display: block; font-size: 11px; color: #6b7a88; text-transform: uppercase; }
+    .box strong { font-size: 22px; color: #39ff14; }
+    #board {
+      background: #0a0e12; border-radius: 10px; padding: 10px;
+      display: grid; grid-template-columns: repeat(4, 90px); grid-gap: 10px;
+      border: 2px solid #2f3b47; margin: 0 auto;
+    }
+    .cell {
+      width: 90px; height: 90px; border-radius: 8px;
+      background: #1a2330; display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 700; color: #776e65;
+      transition: transform 0.1s;
+    }
+    .msg { min-height: 24px; margin-top: 14px; color: #8ab4f8; font-size: 15px; }
+    button {
+      margin-top: 10px; background: #39ff14; color: #0a0e12; border: none;
+      padding: 10px 28px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 15px;
+    }
+    .ctrl { margin-top: 12px; color: #6b7a88; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>2048</h1>
+    <div class="top">
+      <div class="box"><span>Score</span><strong id="sc">0</strong></div>
+      <div class="box"><span>Record</span><strong id="hs">0</strong></div>
+    </div>
+    <div id="board"></div>
+    <div class="msg" id="msg">Utilise les flèches</div>
+    <button id="btn">Nouvelle partie</button>
+    <div class="ctrl">Flèches ou ZQSD pour glisser les tuiles</div>
+  </div>
+  <script>
+    const boardEl = document.getElementById('board');
+    const scEl = document.getElementById('sc');
+    const hsEl = document.getElementById('hs');
+    const msg = document.getElementById('msg');
+
+    const COLORS = {
+      0: ['#1a2330', '#1a2330'],
+      2: ['#eee4da', '#776e65'],
+      4: ['#ede0c8', '#776e65'],
+      8: ['#f2b179', '#f9f6f2'],
+      16: ['#f59563', '#f9f6f2'],
+      32: ['#f67c5f', '#f9f6f2'],
+      64: ['#f65e3b', '#f9f6f2'],
+      128: ['#edcf72', '#f9f6f2'],
+      256: ['#edcc61', '#f9f6f2'],
+      512: ['#edc850', '#f9f6f2'],
+      1024: ['#edc53f', '#f9f6f2'],
+      2048: ['#edc22e', '#f9f6f2'],
+    };
+
+    let grid, score, high, won, over;
+    high = Number(localStorage.getItem('hs2048') || 0);
+    hsEl.textContent = high;
+
+    function empty() {
+      return Array.from({ length: 4 }, () => Array(4).fill(0));
+    }
+
+    function spawn() {
+      const free = [];
+      for (let r = 0; r < 4; r++)
+        for (let c = 0; c < 4; c++)
+          if (!grid[r][c]) free.push([r, c]);
+      if (!free.length) return;
+      const [r, c] = free[Math.floor(Math.random() * free.length)];
+      grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+    }
+
+    function reset() {
+      grid = empty();
+      score = 0; won = false; over = false;
+      scEl.textContent = '0';
+      msg.textContent = 'Utilise les flèches';
+      spawn(); spawn();
+      render();
+    }
+
+    function slide(row) {
+      const arr = row.filter(v => v);
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+          arr[i] *= 2;
+          score += arr[i];
+          arr[i + 1] = 0;
+          if (arr[i] === 2048 && !won) {
+            won = true;
+            msg.textContent = '2048 ! Continue si tu veux 🎉';
+          }
+        }
+      }
+      const merged = arr.filter(v => v);
+      while (merged.length < 4) merged.push(0);
+      return merged;
+    }
+
+    function move(dir) {
+      if (over) return;
+      const prev = grid.map(r => [...r]);
+
+      if (dir === 'left') grid = grid.map(slide);
+      if (dir === 'right') grid = grid.map(r => slide(r.reverse()).reverse());
+      if (dir === 'up') {
+        for (let c = 0; c < 4; c++) {
+          const col = slide([grid[0][c], grid[1][c], grid[2][c], grid[3][c]]);
+          for (let r = 0; r < 4; r++) grid[r][c] = col[r];
+        }
+      }
+      if (dir === 'down') {
+        for (let c = 0; c < 4; c++) {
+          const col = slide([grid[3][c], grid[2][c], grid[1][c], grid[0][c]]);
+          for (let r = 0; r < 4; r++) grid[3 - r][c] = col[r];
+        }
+      }
+
+      const changed = grid.some((row, r) => row.some((v, c) => v !== prev[r][c]));
+      if (changed) {
+        spawn();
+        scEl.textContent = score;
+        if (score > high) {
+          high = score; hsEl.textContent = high;
+          localStorage.setItem('hs2048', String(high));
+        }
+        if (!canMove()) {
+          over = true;
+          msg.textContent = 'Game Over — Score : ' + score;
+        }
+      }
+      render();
+    }
+
+    function canMove() {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (!grid[r][c]) return true;
+          if (c < 3 && grid[r][c] === grid[r][c + 1]) return true;
+          if (r < 3 && grid[r][c] === grid[r + 1][c]) return true;
+        }
+      }
+      return false;
+    }
+
+    function render() {
+      boardEl.innerHTML = '';
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          const v = grid[r][c];
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          const [bg, fg] = COLORS[v] || ['#3c3a32', '#f9f6f2'];
+          cell.style.background = bg;
+          cell.style.color = fg;
+          if (v >= 1000) cell.style.fontSize = '22px';
+          else if (v >= 100) cell.style.fontSize = '26px';
+          cell.textContent = v || '';
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      const map = {
+        arrowleft: 'left', arrowright: 'right', arrowup: 'up', arrowdown: 'down',
+        q: 'left', d: 'right', z: 'up', s: 'down', w: 'up', a: 'left',
+      };
+      const dir = map[e.key.toLowerCase()];
+      if (dir) { e.preventDefault(); move(dir); }
+    });
+
+    let touchX, touchY;
+    document.addEventListener('touchstart', e => {
+      touchX = e.touches[0].clientX; touchY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+      if (touchX == null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      const dy = e.changedTouches[0].clientY - touchY;
+      if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
+      if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
+      else move(dy > 0 ? 'down' : 'up');
+      touchX = touchY = null;
+    });
+
+    document.getElementById('btn').onclick = reset;
+    reset();
+  </script>
+</body>
+</html>

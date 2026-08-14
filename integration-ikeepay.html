@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Boutique - Paiement Sécurisé Ikeepay</title>
+    
+    <style>
+        /* RESET & BASE */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: #f8fafc; 
+            color: #1e293b; 
+            font-family: 'Inter', -apple-system, sans-serif;
+            min-height: screen;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* CARD PRODUCT */
+        .product-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+            max-width: 24rem;
+            width: 100%;
+            overflow: hidden;
+        }
+        .product-img { width: 100%; height: 12rem; object-fit: cover; }
+        .product-content { padding: 1.5rem; }
+        
+        /* TYPOGRAPHY */
+        .badge { font-size: 0.75rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; }
+        .ref { font-size: 0.75rem; color: #94a3b8; }
+        .title { font-size: 1.25rem; font-weight: 700; margin: 0.5rem 0; color: #0f172a; }
+        .description { color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.4; }
+        
+        /* UTILS */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .price { font-size: 1.875rem; font-weight: 900; color: #0f172a; }
+        .currency { font-size: 0.875rem; font-weight: 700; color: #64748b; margin-left: 0.25rem; }
+
+        /* BUTTON */
+        .btn-pay { 
+            background-color: #2563eb; 
+            color: white; 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 0.75rem; 
+            font-weight: 700; 
+            border: none; 
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+        }
+        .btn-pay:hover { background-color: #1d4ed8; }
+        .btn-pay:active { transform: scale(0.95); }
+        .btn-pay:disabled { background-color: #94a3b8; cursor: not-allowed; }
+
+        /* OVERLAY & IFRAME */
+        #ikeepay-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(4px); 
+            z-index: 50; 
+            display: none; 
+            align-items: center; 
+            justify-content: center;
+        }
+        #ikeepay-overlay.flex { display: flex; }
+        .modal-container { position: relative; width: 100%; max-width: 450px; height: 100%; }
+        
+        @media (min-width: 768px) {
+            .modal-container { height: 85vh; padding: 1rem; }
+            #ikeepay-iframe { border-radius: 2rem; }
+        }
+
+        iframe { border: none; width: 100%; height: 100%; background: transparent; }
+        
+        .btn-close { 
+            position: absolute; top: -3rem; right: 1rem; 
+            background: none; border: none; color: white; cursor: pointer;
+        }
+        .btn-close:hover { color: #f87171; }
+    </style>
+</head>
+<body>
+
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80" alt="Produit" class="product-img">
+        <div class="product-content">
+            <div class="flex-between" style="margin-bottom: 0.5rem;">
+                <span class="badge">Électronique</span>
+                <span class="ref">Réf: IK-990</span>
+            </div>
+            <h2 class="title">Montre Connectée Pro</h2>
+            <p class="description">Suivi santé, notifications et étanchéité 50m. Le compagnon idéal au quotidien.</p>
+            
+            <div class="flex-between">
+                <div>
+                    <span class="price">5.00</span>
+                    <span class="currency">USD</span>
+                </div>
+                <button id="pay-btn" class="btn-pay">Acheter</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ikeepay-overlay">
+        <div class="modal-container">
+            <button onclick="closeIkeepay()" class="btn-close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <iframe id="ikeepay-iframe" src="" allowtransparency="true"></iframe>
+        </div>
+    </div>
+
+    <script>
+        /* Le reste de votre code JavaScript demeure inchangé */
+        const CONFIG = {
+            PUBLIC_KEY: "pk_live_ed2308d5c68349adb78821b15fdd352f",
+            SECRET_KEY: "sk_live_REPLACE_WITH_YOUR_SECRET_KEY",
+            CHECKOUT_URL: "https://www.ikeepay.com/checkout/v1/inline"
+        };
+
+        const overlay = document.getElementById('ikeepay-overlay');
+        const iframe = document.getElementById('ikeepay-iframe');
+        const payBtn = document.getElementById('pay-btn');
+
+        payBtn.onclick = () => {
+            payBtn.innerHTML = "Chargement...";
+            payBtn.disabled = true;
+
+            const params = new URLSearchParams({
+                pk: CONFIG.PUBLIC_KEY,
+                sk: CONFIG.SECRET_KEY,
+                amount: "0.01",
+                currency: 'USD',
+                order_id: 'ORDER_test_' + Date.now(),
+                email: 'client@mail.com'
+            });
+
+            iframe.src = `${CONFIG.CHECKOUT_URL}?${params.toString()}`;
+        };
+
+        window.addEventListener('message', (event) => {
+            if (event.data === 'ikeepay-ready') {
+                overlay.classList.add('flex');
+                payBtn.innerHTML = "Acheter";
+                payBtn.disabled = false;
+            }
+            if (event.data === 'ikeepay-close') {
+                closeIkeepay();
+            }
+            if (event.data === 'ikeepay-success') {
+                setTimeout(() => {
+                    closeIkeepay();
+                    alert("Succès ! Votre commande a été validée.");
+                }, 2000);
+            }
+        });
+
+        function closeIkeepay() {
+            overlay.classList.remove('flex');
+            iframe.src = "";
+            payBtn.innerHTML = "Acheter";
+            payBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f1419; min-height: 100vh; display: flex;
+      justify-content: center; align-items: center;
+      font-family: 'Segoe UI', system-ui, sans-serif; color: #e7e9ea;
+    }
+    .wrap {
+      background: #16202a; border: 1px solid #2f3b47; border-radius: 12px;
+      padding: 24px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+    h1 { color: #39ff14; font-size: 22px; margin-bottom: 14px; letter-spacing: .06em; }
+    canvas { background: #0a0e12; border: 2px solid #2f3b47; border-radius: 8px; display: block; margin: 0 auto; }
+    .hud { display: flex; justify-content: space-between; margin-top: 12px; font-size: 18px; }
+    .hud strong { color: #39ff14; }
+    .msg { min-height: 22px; margin-top: 8px; color: #8ab4f8; font-size: 14px; }
+    button {
+      margin-top: 12px; background: #39ff14; color: #0a0e12; border: none;
+      padding: 10px 28px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 15px;
+    }
+    button:hover { background: #2dd60f; }
+    .ctrl { margin-top: 12px; color: #6b7a88; font-size: 13px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🏓 PONG</h1>
+    <canvas id="c" width="640" height="400"></canvas>
+    <div class="hud">
+      <span>Toi : <strong id="ps">0</strong></span>
+      <span>IA : <strong id="as">0</strong></span>
+    </div>
+    <div class="msg" id="msg">Espace pour démarrer</div>
+    <button id="btn">Rejouer</button>
+    <div class="ctrl">W / S ou flèches haut/bas · Espace pause</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const psEl = document.getElementById('ps');
+    const asEl = document.getElementById('as');
+    const msg = document.getElementById('msg');
+
+    let player = { x: 20, y: H/2 - 40, w: 12, h: 80, dy: 0 };
+    let ai = { x: W - 32, y: H/2 - 40, w: 12, h: 80 };
+    let ball = { x: W/2, y: H/2, r: 8, dx: 5, dy: 3 };
+    let pScore = 0, aScore = 0;
+    let running = false, paused = false;
+    const keys = {};
+
+    function resetBall(dir = 1) {
+      ball.x = W/2; ball.y = H/2;
+      ball.dx = 5 * dir;
+      ball.dy = (Math.random() * 4 + 2) * (Math.random() < 0.5 ? 1 : -1);
+    }
+
+    function resetAll() {
+      pScore = 0; aScore = 0;
+      psEl.textContent = '0'; asEl.textContent = '0';
+      player.y = H/2 - 40; ai.y = H/2 - 40;
+      resetBall(Math.random() < 0.5 ? 1 : -1);
+      running = false; paused = false;
+      msg.textContent = 'Espace pour démarrer';
+    }
+
+    function hit(p) {
+      return ball.x + ball.r > p.x && ball.x - ball.r < p.x + p.w &&
+             ball.y + ball.r > p.y && ball.y - ball.r < p.y + p.h;
+    }
+
+    function update() {
+      if (!running || paused) return;
+
+      if (keys['w'] || keys['arrowup']) player.y -= 7;
+      if (keys['s'] || keys['arrowdown']) player.y += 7;
+      player.y = Math.max(0, Math.min(H - player.h, player.y));
+
+      const target = ball.y - ai.h / 2;
+      ai.y += Math.sign(target - ai.y) * Math.min(5.2, Math.abs(target - ai.y));
+      ai.y = Math.max(0, Math.min(H - ai.h, ai.y));
+
+      ball.x += ball.dx; ball.y += ball.dy;
+      if (ball.y - ball.r < 0 || ball.y + ball.r > H) ball.dy *= -1;
+
+      if (hit(player) && ball.dx < 0) {
+        ball.dx = Math.abs(ball.dx) * 1.05;
+        ball.dy = ((ball.y - (player.y + player.h/2)) / (player.h/2)) * 5;
+      }
+      if (hit(ai) && ball.dx > 0) {
+        ball.dx = -Math.abs(ball.dx) * 1.05;
+        ball.dy = ((ball.y - (ai.y + ai.h/2)) / (ai.h/2)) * 5;
+      }
+
+      if (ball.x < 0) {
+        aScore++; asEl.textContent = aScore; resetBall(1);
+        if (aScore >= 7) { running = false; msg.textContent = 'IA gagne !'; }
+      }
+      if (ball.x > W) {
+        pScore++; psEl.textContent = pScore; resetBall(-1);
+        if (pScore >= 7) { running = false; msg.textContent = 'Tu gagnes ! 🎉'; }
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0a0e12';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#2f3b47';
+      ctx.setLineDash([8, 10]);
+      ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#39ff14';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(ai.x, ai.y, ai.w, ai.h);
+      ctx.beginPath();
+      ctx.fillStyle = '#fff';
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function loop() {
+      update(); draw();
+      requestAnimationFrame(loop);
+    }
+
+    document.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (!running && (pScore >= 7 || aScore >= 7 || msg.textContent.includes('gagne'))) {
+          resetAll();
+        }
+        if (!running) { running = true; paused = false; msg.textContent = ''; }
+        else { paused = !paused; msg.textContent = paused ? 'Pause' : ''; }
+      }
+    });
+    document.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+    document.getElementById('btn').onclick = resetAll;
+    resetAll(); loop();
+  </script>
+</body>
+</html>

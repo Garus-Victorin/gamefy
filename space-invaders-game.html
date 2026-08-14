@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Invaders</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f1419; min-height: 100vh; display: flex;
+      justify-content: center; align-items: center;
+      font-family: 'Segoe UI', system-ui, sans-serif; color: #e7e9ea;
+    }
+    .wrap {
+      background: #16202a; border: 1px solid #2f3b47; border-radius: 12px;
+      padding: 24px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+    h1 { color: #39ff14; font-size: 22px; margin-bottom: 14px; }
+    canvas { background: #05080c; border: 2px solid #2f3b47; border-radius: 8px; display: block; margin: 0 auto; }
+    .hud { display: flex; justify-content: space-between; margin-top: 12px; font-size: 16px; }
+    .hud strong { color: #39ff14; }
+    .msg { min-height: 22px; margin-top: 8px; color: #8ab4f8; font-size: 14px; }
+    button {
+      margin-top: 12px; background: #39ff14; color: #0a0e12; border: none;
+      padding: 10px 28px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 15px;
+    }
+    .ctrl { margin-top: 12px; color: #6b7a88; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>👾 SPACE INVADERS</h1>
+    <canvas id="c" width="480" height="520"></canvas>
+    <div class="hud">
+      <span>Score : <strong id="sc">0</strong></span>
+      <span>Vies : <strong id="lv">3</strong></span>
+    </div>
+    <div class="msg" id="msg">Espace pour commencer / tirer</div>
+    <button id="btn">Rejouer</button>
+    <div class="ctrl">← → ou Q/D pour bouger · Espace pour tirer</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const scEl = document.getElementById('sc');
+    const lvEl = document.getElementById('lv');
+    const msg = document.getElementById('msg');
+
+    let player, bullets, enemies, eBullets, score, lives, running, keys = {}, dir, tick, cooldown;
+
+    function makeEnemies() {
+      enemies = [];
+      const colors = ['#ff6b6b', '#ffa502', '#39ff14', '#1e90ff', '#a55eea'];
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 8; c++) {
+          enemies.push({
+            x: 50 + c * 48, y: 50 + r * 36,
+            w: 32, h: 22, alive: true, color: colors[r],
+          });
+        }
+      }
+    }
+
+    function reset() {
+      player = { x: W/2 - 22, y: H - 40, w: 44, h: 16 };
+      bullets = []; eBullets = [];
+      score = 0; lives = 3; dir = 1; tick = 0; cooldown = 0;
+      scEl.textContent = '0'; lvEl.textContent = '3';
+      makeEnemies();
+      running = false;
+      msg.textContent = 'Espace pour commencer / tirer';
+    }
+
+    function update() {
+      if (!running) return;
+      tick++;
+      if (cooldown > 0) cooldown--;
+
+      if (keys['arrowleft'] || keys['q'] || keys['a']) player.x -= 5;
+      if (keys['arrowright'] || keys['d']) player.x += 5;
+      player.x = Math.max(8, Math.min(W - player.w - 8, player.x));
+
+      for (const b of bullets) b.y -= 8;
+      bullets = bullets.filter(b => b.y > 0);
+
+      // aliens move
+      if (tick % 28 === 0) {
+        let hitEdge = false;
+        for (const e of enemies) {
+          if (!e.alive) continue;
+          e.x += dir * 12;
+          if (e.x < 10 || e.x + e.w > W - 10) hitEdge = true;
+        }
+        if (hitEdge) {
+          dir *= -1;
+          for (const e of enemies) {
+            if (!e.alive) continue;
+            e.y += 16;
+            e.x += dir * 12;
+            if (e.y + e.h >= player.y) end('Les aliens ont envahi !');
+          }
+        }
+      }
+
+      // alien shoot
+      if (tick % 40 === 0) {
+        const alive = enemies.filter(e => e.alive);
+        if (alive.length) {
+          const e = alive[Math.floor(Math.random() * alive.length)];
+          eBullets.push({ x: e.x + e.w/2, y: e.y + e.h, r: 4 });
+        }
+      }
+      for (const b of eBullets) b.y += 4;
+      eBullets = eBullets.filter(b => b.y < H);
+
+      // collisions bullets / aliens
+      for (const b of bullets) {
+        for (const e of enemies) {
+          if (!e.alive) continue;
+          if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
+            e.alive = false; b.y = -99;
+            score += 10; scEl.textContent = score;
+          }
+        }
+      }
+      bullets = bullets.filter(b => b.y > 0);
+
+      // collisions alien bullets / player
+      for (const b of eBullets) {
+        if (b.x > player.x && b.x < player.x + player.w &&
+            b.y > player.y && b.y < player.y + player.h) {
+          b.y = H + 99;
+          lives--; lvEl.textContent = lives;
+          if (lives <= 0) end('Game Over — Score : ' + score);
+        }
+      }
+      eBullets = eBullets.filter(b => b.y < H);
+
+      if (enemies.every(e => !e.alive)) {
+        makeEnemies();
+        dir = 1;
+        msg.textContent = 'Vague suivante !';
+        setTimeout(() => { if (running) msg.textContent = ''; }, 1200);
+      }
+    }
+
+    function end(text) {
+      running = false;
+      msg.textContent = text;
+    }
+
+    function shoot() {
+      if (!running) { running = true; msg.textContent = ''; }
+      if (!running) return;
+      if (cooldown > 0) return;
+      bullets.push({ x: player.x + player.w/2, y: player.y, r: 3 });
+      cooldown = 12;
+    }
+
+    function draw() {
+      ctx.fillStyle = '#05080c';
+      ctx.fillRect(0, 0, W, H);
+      // stars
+      ctx.fillStyle = '#fff';
+      for (let i = 0; i < 40; i++) {
+        const x = (i * 97) % W;
+        const y = (i * 53 + tick * 0.2) % H;
+        ctx.fillRect(x, y, 1, 1);
+      }
+
+      // player
+      ctx.fillStyle = '#39ff14';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+      ctx.fillRect(player.x + 16, player.y - 8, 12, 8);
+
+      // aliens
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        ctx.fillStyle = e.color;
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+        ctx.fillStyle = '#05080c';
+        ctx.fillRect(e.x + 6, e.y + 6, 6, 6);
+        ctx.fillRect(e.x + 20, e.y + 6, 6, 6);
+      }
+
+      // bullets
+      ctx.fillStyle = '#fff';
+      for (const b of bullets) {
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.fillStyle = '#ff6b6b';
+      for (const b of eBullets) {
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+      }
+    }
+
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+    document.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.key === ' ') { e.preventDefault(); shoot(); }
+    });
+    document.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+    document.getElementById('btn').onclick = reset;
+    reset(); loop();
+  </script>
+</body>
+</html>
