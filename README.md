@@ -26,6 +26,7 @@ Aucune installation : ouvre le fichier dans ton navigateur.
 | [`pacman-game.html`](pacman-game.html) | **Pac-Man** | Labyrinthe, pastilles, fantômes | Flèches / `ZQSD` |
 | [`memory-game.html`](memory-game.html) | **Memory** | 8 paires de cartes | Clic sur les cartes |
 | [`whack-a-mole-game.html`](whack-a-mole-game.html) | **Whack-a-Mole** | Tape les taupes en 30 s | Clic |
+| [`integration-ikeepay.html`](integration-ikeepay.html) | **payer en ligne via ikeepay** | test ikeepay | Clic |
 
 ---
 
