@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Dames</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    .chk-cell { width:45px; height:45px; display:flex; align-items:center; justify-content:center; }
+    .chk-cell.dark { background: #1e2732; }
+    .chk-cell.light { background: #273340; }
+    .chk-piece { width:32px; height:32px; border-radius:50%; cursor:pointer; }
+    .chk-piece.red { background: #f75c7e; }
+    .chk-piece.white { background: #e7e9ea; }
+    .chk-piece.selected { border: 3px solid #1d9bf0; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Jeu de Dames</h1>
+
+    <div class="stats">
+        <span>Tour: <strong id="chkTurn" style="color:#f75c7e;">Rouge</strong></span>
+    </div>
+    <div id="chkBoard" style="display:grid; grid-template-columns:repeat(8, 45px); gap:0; border:2px solid #273340;"></div>
+    <div id="chkMsg" style="height:25px; margin-top:10px; color:#00ba7c; font-size:1.1rem;"></div>
+    <button class="btn" onclick="initCheckers()">Nouvelle partie</button>
+    <p class="instructions">Cliquez sur un pion puis sur une case diagonale adjacente pour vous déplacer.</p>
+
+    </div>
+    <script>
+
+    let chkGrid = Array(8).fill(null).map(() => Array(8).fill(null));
+    let selectedPiece = null;
+    let chkTurn = 'red';
+
+    function initCheckers() {
+        chkGrid = Array(8).fill(null).map(() => Array(8).fill(null));
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 8; c++) if ((r + c) % 2 === 1) chkGrid[r][c] = 'white';
+        }
+        for (let r = 5; r < 8; r++) {
+            for (let c = 0; c < 8; c++) if ((r + c) % 2 === 1) chkGrid[r][c] = 'red';
+        }
+        chkTurn = 'red';
+        selectedPiece = null;
+        renderCheckers();
+    }
+
+    function renderCheckers() {
+        const board = document.getElementById('chkBoard');
+        board.innerHTML = '';
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                let cell = document.createElement('div');
+                cell.className = 'chk-cell ' + ((r + c) % 2 === 1 ? 'dark' : 'light');
+                cell.onclick = () => handleChkClick(r, c);
+                if (chkGrid[r][c]) {
+                    let p = document.createElement('div');
+                    p.className = 'chk-piece ' + chkGrid[r][c];
+                    if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) p.classList.add('selected');
+                    cell.appendChild(p);
+                }
+                board.appendChild(cell);
+            }
+        }
+    }
+
+    function handleChkClick(r, c) {
+        if (chkGrid[r][c] === chkTurn) {
+            selectedPiece = { r, c };
+            renderCheckers();
+        } else if (selectedPiece) {
+            let dr = r - selectedPiece.r, dc = c - selectedPiece.c;
+            if (Math.abs(dc) === 1 && chkGrid[r][c] === null) {
+                chkGrid[r][c] = chkTurn;
+                chkGrid[selectedPiece.r][selectedPiece.c] = null;
+                chkTurn = chkTurn === 'red' ? 'white' : 'red';
+                document.getElementById('chkTurn').textContent = chkTurn === 'red' ? 'Rouge' : 'Blanc';
+                selectedPiece = null;
+                renderCheckers();
+            }
+        }
+    }
+
+    initCheckers();
+
+    </script>
+</body>
+</html>

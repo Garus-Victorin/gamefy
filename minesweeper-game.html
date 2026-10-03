@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démineur</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    .mscell {
+        width: 35px; height: 35px; background: #273340; border-radius: 4px;
+        display: flex; align-items: center; justify-content: center; font-weight: bold;
+        cursor: pointer; font-size: 1rem;
+    }
+    .mscell.revealed { background: #0f1419; }
+    .mscell.mine { background: #f75c7e; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Démineur</h1>
+
+    <div class="stats">
+        <span>Mines: <strong id="mineCount">10</strong></span>
+        <span>Temps: <strong id="mineTimer">0</strong>s</span>
+    </div>
+    <div id="msBoard" style="display: grid; grid-template-columns: repeat(9, 35px); gap: 4px; background: #1e2732; padding: 8px; border-radius: 8px;"></div>
+    <div id="msMsg" style="margin-top: 10px; font-size: 1.1rem; height: 25px; color: #00ba7c;"></div>
+    <button class="btn" onclick="initMinesweeper()">Recommencer</button>
+    <p class="instructions">Clic gauche pour révéler, Clic droit pour poser un drapeau</p>
+
+    </div>
+    <script>
+
+    const M_ROWS = 9, M_COLS = 9, MINES = 10;
+    let msGrid = [], msRevealed = [], msFlagged = [];
+    let msGameOver = false, msTime = 0, msTimerInterval = null;
+
+    function initMinesweeper() {
+        clearInterval(msTimerInterval);
+        msTime = 0; msGameOver = false;
+        document.getElementById('mineTimer').textContent = '0';
+        document.getElementById('mineCount').textContent = MINES;
+        document.getElementById('msMsg').textContent = '';
+
+        msGrid = Array(M_ROWS).fill(0).map(() => Array(M_COLS).fill(0));
+        msRevealed = Array(M_ROWS).fill(false).map(() => Array(M_COLS).fill(false));
+        msFlagged = Array(M_ROWS).fill(false).map(() => Array(M_COLS).fill(false));
+
+        let placed = 0;
+        while(placed < MINES) {
+            let r = Math.floor(Math.random() * M_ROWS);
+            let c = Math.floor(Math.random() * M_COLS);
+            if (msGrid[r][c] !== -1) {
+                msGrid[r][c] = -1;
+                placed++;
+            }
+        }
+
+        for (let r = 0; r < M_ROWS; r++) {
+            for (let c = 0; c < M_COLS; c++) {
+                if (msGrid[r][c] === -1) continue;
+                let count = 0;
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        let nr = r + dr, nc = c + dc;
+                        if (nr>=0 && nr<M_ROWS && nc>=0 && nc<M_COLS && msGrid[nr][nc] === -1) count++;
+                    }
+                }
+                msGrid[r][c] = count;
+            }
+        }
+
+        msTimerInterval = setInterval(() => {
+            if (!msGameOver) { msTime++; document.getElementById('mineTimer').textContent = msTime; }
+        }, 1000);
+
+        renderMS();
+    }
+
+    function renderMS() {
+        const board = document.getElementById('msBoard');
+        board.innerHTML = '';
+        for (let r = 0; r < M_ROWS; r++) {
+            for (let c = 0; c < M_COLS; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'mscell' + (msRevealed[r][c] ? ' revealed' : '');
+                if (msRevealed[r][c]) {
+                    if (msGrid[r][c] === -1) { cell.textContent = '💣'; cell.classList.add('mine'); }
+                    else if (msGrid[r][c] > 0) { cell.textContent = msGrid[r][c]; }
+                } else if (msFlagged[r][c]) {
+                    cell.textContent = '🚩';
+                }
+                cell.onclick = () => revealMS(r, c);
+                cell.oncontextmenu = (e) => { e.preventDefault(); flagMS(r, c); };
+                board.appendChild(cell);
+            }
+        }
+    }
+
+    function flagMS(r, c) {
+        if (msGameOver || msRevealed[r][c]) return;
+        msFlagged[r][c] = !msFlagged[r][c];
+        renderMS();
+    }
+
+    function revealMS(r, c) {
+        if (msGameOver || msRevealed[r][c] || msFlagged[r][c]) return;
+        msRevealed[r][c] = true;
+        if (msGrid[r][c] === -1) {
+            msGameOver = true;
+            document.getElementById('msMsg').textContent = 'BOOM ! Game Over.';
+            // reveal all mines
+            for(let i=0;i<M_ROWS;i++) for(let j=0;j<M_COLS;j++) if(msGrid[i][j]===-1) msRevealed[i][j]=true;
+        } else if (msGrid[r][c] === 0) {
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    let nr = r + dr, nc = c + dc;
+                    if (nr>=0 && nr<M_ROWS && nc>=0 && nc<M_COLS && !msRevealed[nr][nc]) revealMS(nr, nc);
+                }
+            }
+        }
+        checkMSWin();
+        renderMS();
+    }
+
+    function checkMSWin() {
+        let win = true;
+        for (let r = 0; r < M_ROWS; r++) {
+            for (let c = 0; c < M_COLS; c++) {
+                if (msGrid[r][c] !== -1 && !msRevealed[r][c]) win = false;
+            }
+        }
+        if (win) {
+            msGameOver = true;
+            document.getElementById('msMsg').textContent = 'Bravo ! Vous avez déminé le terrain !';
+        }
+    }
+
+    initMinesweeper();
+
+    </script>
+</body>
+</html>

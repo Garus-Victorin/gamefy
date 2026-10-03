@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flipper / Pinball</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Flipper / Pinball</h1>
+
+    <div class="stats">
+        <span>Score: <strong id="pbScore">0</strong></span>
+    </div>
+    <canvas id="pbCanvas" width="320" height="450" style="background:#161e27; border-radius:10px;"></canvas>
+    <button class="btn" onclick="initPinball()">Lancer Balle</button>
+    <p class="instructions">Flèches Gauche/Droite pour actionner les batteurs.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('pbCanvas');
+    const ctx = canvas.getContext('2d');
+    let ball = { x: 160, y: 200, vx: 2, vy: 3, r: 8 };
+    let score = 0;
+
+    function initPinball() {
+        ball = { x: 160, y: 100, vx: (Math.random()-0.5)*4, vy: 3, r: 8 };
+        score = 0;
+        document.getElementById('pbScore').textContent = score;
+    }
+
+    function updatePB() {
+        ball.vy += 0.15; // gravity
+        ball.x += ball.vx; ball.y += ball.vy;
+
+        // Walls
+        if (ball.x - ball.r < 0 || ball.x + ball.r > 320) ball.vx *= -0.8;
+        if (ball.y - ball.r < 0) ball.vy *= -0.8;
+
+        // Bumper hit
+        let bdx = ball.x - 160, bdy = ball.y - 150;
+        if (Math.hypot(bdx, bdy) < ball.r + 25) {
+            ball.vx = (bdx / Math.hypot(bdx, bdy)) * 8;
+            ball.vy = (bdy / Math.hypot(bdx, bdy)) * 8;
+            score += 50;
+            document.getElementById('pbScore').textContent = score;
+        }
+
+        // Out of bottom
+        if (ball.y > 450) initPinball();
+
+        drawPB();
+        requestAnimationFrame(updatePB);
+    }
+
+    function drawPB() {
+        ctx.clearRect(0, 0, 320, 450);
+
+        // Bumper
+        ctx.fillStyle = '#ffd166';
+        ctx.beginPath(); ctx.arc(160, 150, 25, 0, Math.PI*2); ctx.fill();
+
+        // Ball
+        ctx.fillStyle = '#f75c7e';
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+    }
+
+    updatePB();
+
+    </script>
+</body>
+</html>

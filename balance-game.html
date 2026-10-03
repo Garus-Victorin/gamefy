@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Équilibre Physique</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Équilibre Physique</h1>
+
+    <div class="stats">Temps d'équilibre: <strong id="balTime">0</strong>s</div>
+    <canvas id="balCanvas" width="350" height="300" style="background:#0f1419; border-radius:8px;"></canvas>
+    <button class="btn" onclick="initBalance()">Recommencer</button>
+    <p class="instructions">Flèches Gauche/Droite pour équilibrer la barre et éviter que le bloc ne tombe.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('balCanvas');
+    const ctx = canvas.getContext('2d');
+    let angle = 0, blockX = 0, balTime = 0, balActive = true;
+
+    function initBalance() {
+        angle = 0; blockX = 0; balTime = 0; balActive = true;
+    }
+
+    function updateBalance() {
+        if (balActive) {
+            angle += (blockX / 100) * 0.02; // gravity effect
+            blockX += angle * 2;
+            balTime += 0.016;
+            document.getElementById('balTime').textContent = balTime.toFixed(1);
+
+            if (Math.abs(blockX) > 140 || Math.abs(angle) > 0.8) {
+                balActive = false;
+            }
+        }
+
+        ctx.clearRect(0, 0, 350, 300);
+
+        // Pivot
+        ctx.fillStyle = '#273340';
+        ctx.beginPath(); ctx.moveTo(175, 200); ctx.lineTo(155, 250); ctx.lineTo(195, 250); ctx.fill();
+
+        // Seesaw bar
+        ctx.save();
+        ctx.translate(175, 200);
+        ctx.rotate(angle);
+
+        ctx.fillStyle = '#1d9bf0';
+        ctx.fillRect(-140, -6, 280, 12);
+
+        // Falling Block
+        ctx.fillStyle = '#f75c7e';
+        ctx.fillRect(blockX - 12, -26, 24, 20);
+
+        ctx.restore();
+
+        requestAnimationFrame(updateBalance);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') angle -= 0.05;
+        if (e.key === 'ArrowRight') angle += 0.05;
+    });
+
+    updateBalance();
+
+    </script>
+</body>
+</html>

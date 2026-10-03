@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron Light Cycles</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Tron Light Cycles</h1>
+
+    <div class="stats">Joueur 1 (Vert) VS Joueur 2 (Rouge)</div>
+    <canvas id="tronCanvas" width="360" height="360" style="background:#0f1419; border:2px solid #273340; border-radius:8px;"></canvas>
+    <div id="tronMsg" style="height:25px; margin-top:10px; color:#00ba7c; font-size:1.1rem;"></div>
+    <button class="btn" onclick="initTron()">Nouvelle Course</button>
+    <p class="instructions">J1: ZQSD | J2: Flèches directionnelles. Ne touchez pas les murs ni les traînées lumineuses !</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('tronCanvas');
+    const ctx = canvas.getContext('2d');
+    let p1 = { x: 60, y: 180, dx: 2, dy: 0, color: '#00ba7c', trail: [] };
+    let p2 = { x: 300, y: 180, dx: -2, dy: 0, color: '#f75c7e', trail: [] };
+    let tronActive = true;
+
+    function initTron() {
+        p1 = { x: 60, y: 180, dx: 2, dy: 0, color: '#00ba7c', trail: [] };
+        p2 = { x: 300, y: 180, dx: -2, dy: 0, color: '#f75c7e', trail: [] };
+        tronActive = true;
+        document.getElementById('tronMsg').textContent = '';
+        ctx.clearRect(0, 0, 360, 360);
+    }
+
+    function updateTron() {
+        if (tronActive) {
+            p1.trail.push({ x: p1.x, y: p1.y });
+            p2.trail.push({ x: p2.x, y: p2.y });
+
+            p1.x += p1.dx; p1.y += p1.dy;
+            p2.x += p2.dx; p2.y += p2.dy;
+
+            // Boundaries
+            if (p1.x < 0 || p1.x > 360 || p1.y < 0 || p1.y > 360) {
+                tronActive = false; document.getElementById('tronMsg').textContent = 'Joueur 2 (Rouge) gagne !';
+            }
+            if (p2.x < 0 || p2.x > 360 || p2.y < 0 || p2.y > 360) {
+                tronActive = false; document.getElementById('tronMsg').textContent = 'Joueur 1 (Vert) gagne !';
+            }
+
+            // Draw trails
+            ctx.fillStyle = p1.color; ctx.fillRect(p1.x, p1.y, 3, 3);
+            ctx.fillStyle = p2.color; ctx.fillRect(p2.x, p2.y, 3, 3);
+        }
+
+        requestAnimationFrame(updateTron);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' && p2.dy === 0) { p2.dx = 0; p2.dy = -2; }
+        if (e.key === 'ArrowDown' && p2.dy === 0) { p2.dx = 0; p2.dy = 2; }
+        if (e.key === 'ArrowLeft' && p2.dx === 0) { p2.dx = -2; p2.dy = 0; }
+        if (e.key === 'ArrowRight' && p2.dx === 0) { p2.dx = 2; p2.dy = 0; }
+
+        if (e.key === 'z' && p1.dy === 0) { p1.dx = 0; p1.dy = -2; }
+        if (e.key === 's' && p1.dy === 0) { p1.dx = 0; p1.dy = 2; }
+        if (e.key === 'q' && p1.dx === 0) { p1.dx = -2; p1.dy = 0; }
+        if (e.key === 'd' && p1.dx === 0) { p1.dx = 2; p1.dy = 0; }
+    });
+
+    initTron();
+    updateTron();
+
+    </script>
+</body>
+</html>

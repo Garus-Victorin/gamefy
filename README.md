@@ -26,62 +26,66 @@ Aucune installation : ouvre le fichier dans ton navigateur.
 | [`pacman-game.html`](pacman-game.html) | **Pac-Man** | Labyrinthe, pastilles, fantômes | Flèches / `ZQSD` |
 | [`memory-game.html`](memory-game.html) | **Memory** | 8 paires de cartes | Clic sur les cartes |
 | [`whack-a-mole-game.html`](whack-a-mole-game.html) | **Whack-a-Mole** | Tape les taupes en 30 s | Clic |
+| [`tictactoe-game.html`](tictactoe-game.html) | **Morpion** | Alignez 3 symboles | Clic sur les cases |
+| [`connect4-game.html`](connect4-game.html) | **Puissance 4** | Alignez 4 jetons | Clic sur la colonne |
+| [`minesweeper-game.html`](minesweeper-game.html) | **Démineur** | Évitez les mines cachées | Clic gauche / Clic droit |
+| [`simon-game.html`](simon-game.html) | **Simon Says** | Répétez la séquence lumineuse | Clic sur les boutons |
+| [`sudoku-game.html`](sudoku-game.html) | **Sudoku** | Grille logique 9x9 | Saisie clavier |
+| [`hangman-game.html`](hangman-game.html) | **Jeu du Pendu** | Devinez le mot secret | Clic sur le clavier |
+| [`wordle-game.html`](wordle-game.html) | **Wordle** | Mot de 5 lettres en 6 essais | Clavier |
+| [`frogger-game.html`](frogger-game.html) | **Frogger** | Traversez la route et la rivière | Flèches |
+| [`lunar-lander-game.html`](lunar-lander-game.html) | **Lunar Lander** | Atterrissez en douceur sur la Lune | Flèches |
+| [`stack-game.html`](stack-game.html) | **Stack Tower** | Empilez les blocs le plus haut possible | `Espace` / Clic |
+| [`solitaire-game.html`](solitaire-game.html) | **Solitaire Klondike** | Jeu de cartes Klondike | Clic sur la pioche |
+| [`checkers-game.html`](checkers-game.html) | **Jeu de Dames** | Capturez les pions adverses | Clic |
+| [`chess-game.html`](chess-game.html) | **Jeu d'Échecs** | Échecs minimalistes 2 joueurs | Clic |
+| [`reversi-game.html`](reversi-game.html) | **Othello / Reversi** | Retournez les jetons adverses | Clic |
+| [`lights-out-game.html`](lights-out-game.html) | **Lights Out** | Éteignez toutes les lumières | Clic |
+| [`mastermind-game.html`](mastermind-game.html) | **Mastermind** | Trouve la combinaison de couleurs | Clic |
+| [`slide-puzzle-game.html`](slide-puzzle-game.html) | **Taquin** | Remettez les 15 tuiles en ordre | Clic |
+| [`nonogram-game.html`](nonogram-game.html) | **Picross / Nonogram** | Révélez l'image mystère | Clic |
+| [`air-hockey-game.html`](air-hockey-game.html) | **Air Hockey** | Air Hockey vs IA | Souris |
+| [`pinball-game.html`](pinball-game.html) | **Flipper** | Marquez des points avec la balle | Flèches |
+| [`crossy-road-game.html`](crossy-road-game.html) | **Crossy Highway** | Traversez les routes sans vous faire écraser | Flèches |
+| [`fruit-catcher-game.html`](fruit-catcher-game.html) | **Fruit Catcher** | Attrapez les fruits avec le panier | Souris / Flèches |
+| [`bullet-hell-game.html`](bullet-hell-game.html) | **Esquive Spatiale** | Bullet Hell : survivez aux tirs | Souris / Touch |
+| [`typing-game.html`](typing-game.html) | **Dactylographie** | Test de frappe rapide au clavier | Clavier |
+| [`color-switch-game.html`](color-switch-game.html) | **Color Switch Mini** | Franchissez les obstacles de votre couleur | `Espace` |
+| [`maze-game.html`](maze-game.html) | **Labyrinthe** | Sortez du labyrinthe | Flèches |
+| [`aim-trainer-game.html`](aim-trainer-game.html) | **Aim Trainer** | Entraînement au tir réflexe | Clic |
+| [`bubble-shooter-game.html`](bubble-shooter-game.html) | **Bubble Shooter** | Alignez et tirez les bulles | Clic |
+| [`archery-game.html`](archery-game.html) | **Tir à l'arc** | Visez le centre de la cible | Clic |
+| [`match3-game.html`](match3-game.html) | **Match 3** | Alignez 3 gemmes identiques | Clic |
+| [`pipe-connector-game.html`](pipe-connector-game.html) | **Pipe Connect** | Reliez les tuyaux d'eau | Clic |
+| [`tower-defense-game.html`](tower-defense-game.html) | **Mini Tower Defense** | Placez des tourelles de défense | Clic |
+| [`hexagon-game.html`](hexagon-game.html) | **Hexagon Runner** | Esquivez les murs hexagonaux | Flèches `←` `→` |
+| [`cookie-clicker-game.html`](cookie-clicker-game.html) | **Cookie Clicker** | Produisez des millions de cookies | Clic |
+| [`geometry-runner-game.html`](geometry-runner-game.html) | **Geometry Runner** | Sautez par-dessus les piquants | `Espace` |
+| [`darts-game.html`](darts-game.html) | **Fléchettes** | Visez le mille | Clic |
+| [`pool-game.html`](pool-game.html) | **Billard 8-Pool** | Rentrez les billes | Souris (Cliquer / Glisser) |
+| [`bowling-game.html`](bowling-game.html) | **Bowling** | Faites tomber les quilles | Flèches / Clic |
+| [`platformer-game.html`](platformer-game.html) | **Platformer 2D** | Sautez et ramassez les pièces | Flèches |
+| [`tron-game.html`](tron-game.html) | **Tron Light Cycles** | Course de moto lumineuse 2J | `ZQSD` / Flèches |
+| [`helix-jump-game.html`](helix-jump-game.html) | **Helix Jump Mini** | Descendez la tour hélicoïdale | Flèches |
+| [`word-scramble-game.html`](word-scramble-game.html) | **Mots Mêlés** | Déchiffrez les anagrammes | Clavier |
+| [`speed-math-game.html`](speed-math-game.html) | **Speed Math** | Calcul rapide Vrai/Faux | Clic |
+| [`reaction-test-game.html`](reaction-test-game.html) | **Temps de Réaction** | Test de réflexes chronométré | Clic |
+| [`battleship-game.html`](battleship-game.html) | **Bataille Navale** | Coulez les navires ennemis | Clic |
+| [`balance-game.html`](balance-game.html) | **Équilibre Physique** | Gardez le bloc en équilibre | Flèches |
+| [`plinko-game.html`](plinko-game.html) | **Plinko Mini** | Lâchez la bille pour gagner des points | Clic |
+| [`duck-hunt-game.html`](duck-hunt-game.html) | **Duck Hunt** | Tirez sur les canards | Clic |
+| [`rhythm-game.html`](rhythm-game.html) | **Rhythm Beat** | Jeu de rythme 4 touches | Touches `D`, `F`, `J`, `K` |
+| [`physics-drop-game.html`](physics-drop-game.html) | **Physics Drop** | Dessinez des lignes guidant la bille | Souris |
 | [`integration-ikeepay.html`](integration-ikeepay.html) | **payer en ligne via ikeepay** | test ikeepay | Clic |
-
----
-
-## Détails par jeu
-
-### Dino
-Évite les cactus en sautant. Le score augmente avec la distance.
-
-### Snake
-Mange la nourriture rouge pour grandir. Collision mur ou corps = game over.  
-Le **record** est sauvegardé dans le navigateur (`localStorage`).
-
-### Pong
-Toi à gauche (vert), IA à droite (rouge). Premier qui marque **7 points** gagne.
-
-### Breakout
-Détruis toutes les briques avec la balle. **3 vies**. Raquette pilotable à la souris.
-
-### Flappy Bird
-Espace / clic pour battre des ailes. Évite les tuyaux. Record sauvegardé.
-
-### Tetris
-7 types de pièces (I, O, T, S, Z, J, L).  
-- `←` `→` : déplacer  
-- `↑` / `X` : tourner  
-- `↓` : descendre  
-- `Espace` : hard drop  
-- `P` : pause  
-
-### 2048
-Glisse la grille pour fusionner les tuiles identiques. Objectif : atteindre **2048**. Record sauvegardé.
-
-### Space Invaders
-Déplace ton vaisseau et tire sur les vagues d’aliens. **3 vies**. Les aliens descendent et tirent aussi.
-
-### Asteroids
-Vaisseau en rotation libre. Casse les gros rochers en plus petits. **3 vies**, invulnérabilité courte après un hit.
-
-### Pac-Man
-Mange toutes les pastilles. Les grosses pastilles te rendent temporairement invincible face aux fantômes. **3 vies**.
-
-### Memory
-Retourne les cartes et trouve les **8 paires**. Compte les coups et le temps.
-
-### Whack-a-Mole
-30 secondes pour taper un maximum de taupes. Le rythme s’accélère avec le score. Record sauvegardé.
 
 ---
 
 ## Technique
 
 - HTML + CSS + JavaScript pur (pas de dépendances)
-- Canvas 2D pour la plupart des jeux
+- Canvas 2D / DOM pour tous les jeux
 - Scores / records via `localStorage` quand c’est pertinent
-- Style sombre unifié (fond `#0f1419`, accents verts)
+- Style sombre unifié (fond `#0f1419`, accents bleus/verts)
 
 
 ---

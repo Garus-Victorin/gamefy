@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frogger</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Frogger</h1>
+
+    <div class="stats">
+        <span>Score: <strong id="fScore">0</strong></span>
+        <span>Vies: <strong id="fLives">3</strong></span>
+    </div>
+    <canvas id="fCanvas" width="400" height="400" style="background:#000; border-radius:8px;"></canvas>
+    <button class="btn" onclick="initFrogger()">Recommencer</button>
+    <p class="instructions">Flèches pour faire traverser la grenouille en évitant les voitures et en sautant sur les bûches.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('fCanvas');
+    const ctx = canvas.getContext('2d');
+    let frog = { x: 180, y: 360, size: 30 };
+    let score = 0, lives = 3;
+    let cars = [
+        { x: 0, y: 320, speed: 2, w: 50, color: 'red' },
+        { x: 200, y: 280, speed: -3, w: 60, color: 'yellow' },
+        { x: 100, y: 240, speed: 2.5, w: 40, color: 'orange' }
+    ];
+    let logs = [
+        { x: 50, y: 160, speed: 1.5, w: 80 },
+        { x: 200, y: 120, speed: -2, w: 100 },
+        { x: 100, y: 80, speed: 1.8, w: 70 }
+    ];
+
+    function initFrogger() {
+        frog = { x: 180, y: 360, size: 30 };
+        score = 0; lives = 3;
+        document.getElementById('fScore').textContent = score;
+        document.getElementById('fLives').textContent = lives;
+    }
+
+    function updateFrogger() {
+        // move cars
+        cars.forEach(c => {
+            c.x += c.speed;
+            if (c.speed > 0 && c.x > 400) c.x = -c.w;
+            if (c.speed < 0 && c.x < -c.w) c.x = 400;
+            // collision
+            if (frog.y === c.y && frog.x < c.x + c.w && frog.x + frog.size > c.x) {
+                resetFrog();
+            }
+        });
+
+        // move logs
+        let onLog = false;
+        logs.forEach(l => {
+            l.x += l.speed;
+            if (l.speed > 0 && l.x > 400) l.x = -l.w;
+            if (l.speed < 0 && l.x < -l.w) l.x = 400;
+            if (frog.y === l.y && frog.x < l.x + l.w && frog.x + frog.size > l.x) {
+                onLog = true;
+                frog.x += l.speed;
+            }
+        });
+
+        // water check (y between 80 and 160)
+        if (frog.y >= 80 && frog.y <= 160 && !onLog) {
+            resetFrog();
+        }
+
+        // Win check
+        if (frog.y < 40) {
+            score += 100;
+            document.getElementById('fScore').textContent = score;
+            frog.x = 180; frog.y = 360;
+        }
+
+        drawFrogger();
+        requestAnimationFrame(updateFrogger);
+    }
+
+    function resetFrog() {
+        lives--;
+        document.getElementById('fLives').textContent = lives;
+        frog.x = 180; frog.y = 360;
+        if (lives <= 0) initFrogger();
+    }
+
+    function drawFrogger() {
+        ctx.clearRect(0, 0, 400, 400);
+        // Safe zones
+        ctx.fillStyle = '#00ba7c';
+        ctx.fillRect(0, 360, 400, 40);
+        ctx.fillRect(0, 200, 400, 40);
+        ctx.fillRect(0, 0, 400, 40);
+
+        // Water zone
+        ctx.fillStyle = '#1d9bf0';
+        ctx.fillRect(0, 40, 400, 160);
+
+        // Logs
+        ctx.fillStyle = '#8b5a2b';
+        logs.forEach(l => ctx.fillRect(l.x, l.y + 5, l.w, 30));
+
+        // Cars
+        cars.forEach(c => {
+            ctx.fillStyle = c.color;
+            ctx.fillRect(c.x, c.y + 5, c.w, 30);
+        });
+
+        // Frog
+        ctx.fillStyle = '#2ec4b6';
+        ctx.fillRect(frog.x, frog.y + 5, frog.size, frog.size);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' && frog.y > 0) frog.y -= 40;
+        if (e.key === 'ArrowDown' && frog.y < 360) frog.y += 40;
+        if (e.key === 'ArrowLeft' && frog.x > 0) frog.x -= 40;
+        if (e.key === 'ArrowRight' && frog.x < 360) frog.x += 40;
+    });
+
+    updateFrogger();
+
+    </script>
+</body>
+</html>

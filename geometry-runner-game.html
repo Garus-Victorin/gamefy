@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Runner</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Geometry Runner</h1>
+
+    <div class="stats">Distance: <strong id="geoScore">0</strong>m</div>
+    <canvas id="geoCanvas" width="400" height="250" style="background:#0f1419; border-bottom:3px solid #1d9bf0; border-radius:8px;"></canvas>
+    <button class="btn" onclick="initGeo()">Sauter (ESPACE)</button>
+    <p class="instructions">Appuyez sur ESPACE ou cliquez pour sauter par-dessus les piquants triangulaires.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('geoCanvas');
+    const ctx = canvas.getContext('2d');
+    let cube = { y: 190, vy: 0, isJumping: false };
+    let spikes = [{ x: 400 }];
+    let geoScore = 0;
+
+    function initGeo() {
+        cube = { y: 190, vy: 0, isJumping: false };
+        spikes = [{ x: 400 }];
+        geoScore = 0;
+    }
+
+    function updateGeo() {
+        cube.vy += 0.6; // gravity
+        cube.y += cube.vy;
+        if (cube.y >= 190) { cube.y = 190; cube.isJumping = false; }
+
+        spikes.forEach(s => {
+            s.x -= 4;
+            if (s.x < -20) { s.x = 400 + Math.random()*150; geoScore += 10; document.getElementById('geoScore').textContent = geoScore; }
+            if (s.x < 70 && s.x > 30 && cube.y > 160) initGeo();
+        });
+
+        ctx.clearRect(0, 0, 400, 250);
+
+        // Cube
+        ctx.fillStyle = '#00ba7c';
+        ctx.fillRect(40, cube.y, 30, 30);
+
+        // Spike
+        ctx.fillStyle = '#f75c7e';
+        spikes.forEach(s => {
+            ctx.beginPath();
+            ctx.moveTo(s.x, 220);
+            ctx.lineTo(s.x + 15, 190);
+            ctx.lineTo(s.x + 30, 220);
+            ctx.fill();
+        });
+
+        requestAnimationFrame(updateGeo);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !cube.isJumping) {
+            cube.vy = -10;
+            cube.isJumping = true;
+        }
+    });
+
+    updateGeo();
+
+    </script>
+</body>
+</html>

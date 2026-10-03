@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Clicker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Cookie Clicker</h1>
+
+    <div class="stats">Cookies: <strong id="cookieCount">0</strong></div>
+    <div id="cookie" onclick="clickCookie()" style="font-size:6rem; cursor:pointer; margin:20px 0; user-select:none; transition:transform 0.1s;">🍪</div>
+    <button class="btn" onclick="buyAutoClicker()">Acheter Auto-Clicker (50 Cookies)</button>
+    <p class="instructions">Cliquez sur le cookie pour en produire d'avantage !</p>
+
+    </div>
+    <script>
+
+    let cookies = 0, autoClickers = 0;
+
+    function clickCookie() {
+        cookies++;
+        document.getElementById('cookieCount').textContent = cookies;
+        const c = document.getElementById('cookie');
+        c.style.transform = 'scale(0.9)';
+        setTimeout(() => c.style.transform = 'scale(1)', 100);
+    }
+
+    function buyAutoClicker() {
+        if (cookies >= 50) {
+            cookies -= 50;
+            autoClickers++;
+            document.getElementById('cookieCount').textContent = cookies;
+        }
+    }
+
+    setInterval(() => {
+        if (autoClickers > 0) {
+            cookies += autoClickers;
+            document.getElementById('cookieCount').textContent = cookies;
+        }
+    }, 1000);
+
+    </script>
+</body>
+</html>

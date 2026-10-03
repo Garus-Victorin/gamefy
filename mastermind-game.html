@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastermind</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    .mm-peg { width:30px; height:30px; border-radius:50%; display:inline-block; border:2px solid #273340; cursor:pointer; }
+    .mm-row { display:flex; gap:10px; align-items:center; background:#1e2732; padding:6px; border-radius:6px; }
+    .mm-feedback { display:grid; grid-template-columns:repeat(2, 10px); gap:4px; margin-left:10px; }
+    .mm-dot { width:10px; height:10px; border-radius:50%; background:#273340; }
+    .mm-dot.black { background:#0f1419; border:1px solid #fff; }
+    .mm-dot.white { background:#e7e9ea; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Mastermind</h1>
+
+    <div class="stats">
+        <span>Essai: <strong id="mmTry">1</strong>/10</span>
+    </div>
+    <div id="mmHistory" style="display:flex; flex-direction:column; gap:6px; margin-bottom:15px; max-height:250px; overflow-y:auto;"></div>
+    <div id="mmPalette" style="display:flex; gap:10px; margin-bottom:15px;"></div>
+    <div id="mmMsg" style="height:25px; color:#00ba7c; font-size:1.1rem;"></div>
+    <button class="btn" onclick="initMastermind()">Nouveau Code</button>
+    <p class="instructions">Devinez la combinaison secrète de 4 couleurs en 10 essais.</p>
+
+    </div>
+    <script>
+
+    const mmColors = ['#f75c7e', '#1d9bf0', '#00ba7c', '#ffd166', '#a855f7', '#ff7a00'];
+    let mmSecret = [], currentGuess = [], mmAttempt = 1;
+
+    function initMastermind() {
+        mmSecret = Array(4).fill(0).map(() => mmColors[Math.floor(Math.random()*mmColors.length)]);
+        currentGuess = [];
+        mmAttempt = 1;
+        document.getElementById('mmTry').textContent = mmAttempt;
+        document.getElementById('mmHistory').innerHTML = '';
+        document.getElementById('mmMsg').textContent = '';
+        renderPalette();
+    }
+
+    function renderPalette() {
+        const pal = document.getElementById('mmPalette');
+        pal.innerHTML = '';
+        mmColors.forEach(c => {
+            let peg = document.createElement('div');
+            peg.className = 'mm-peg';
+            peg.style.background = c;
+            peg.onclick = () => addColorGuess(c);
+            pal.appendChild(peg);
+        });
+    }
+
+    function addColorGuess(color) {
+        if (currentGuess.length < 4) {
+            currentGuess.push(color);
+            if (currentGuess.length === 4) submitGuess();
+        }
+    }
+
+    function submitGuess() {
+        let exact = 0, partial = 0;
+        let secCopy = [...mmSecret];
+        let gCopy = [...currentGuess];
+
+        for (let i = 0; i < 4; i++) {
+            if (gCopy[i] === secCopy[i]) { exact++; secCopy[i] = null; gCopy[i] = undefined; }
+        }
+        for (let i = 0; i < 4; i++) {
+            if (gCopy[i]) {
+                let idx = secCopy.indexOf(gCopy[i]);
+                if (idx !== -1) { partial++; secCopy[idx] = null; }
+            }
+        }
+
+        // Render history row
+        const hist = document.getElementById('mmHistory');
+        let row = document.createElement('div');
+        row.className = 'mm-row';
+        currentGuess.forEach(c => {
+            let peg = document.createElement('div');
+            peg.className = 'mm-peg';
+            peg.style.background = c;
+            row.appendChild(peg);
+        });
+
+        let fb = document.createElement('div');
+        fb.className = 'mm-feedback';
+        for(let i=0; i<exact; i++) { let d=document.createElement('div'); d.className='mm-dot black'; fb.appendChild(d); }
+        for(let i=0; i<partial; i++) { let d=document.createElement('div'); d.className='mm-dot white'; fb.appendChild(d); }
+        row.appendChild(fb);
+        hist.appendChild(row);
+
+        if (exact === 4) {
+            document.getElementById('mmMsg').textContent = 'Bravo ! Combinaison trouvée !';
+        } else {
+            mmAttempt++;
+            document.getElementById('mmTry').textContent = mmAttempt;
+            currentGuess = [];
+            if (mmAttempt > 10) document.getElementById('mmMsg').textContent = 'Perdu ! La combinaison est révélée.';
+        }
+    }
+
+    initMastermind();
+
+    </script>
+</body>
+</html>
