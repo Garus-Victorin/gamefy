@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bowling</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Bowling</h1>
+
+    <div class="stats">Quilles tombées: <strong id="bwlScore">0</strong></div>
+    <canvas id="bwlCanvas" width="250" height="400" style="background:#161e27; border-radius:8px;"></canvas>
+    <button class="btn" onclick="rollBowl()">Lancer la Boule</button>
+    <p class="instructions">Flèches Gauche/Droite pour vous placer, cliquez sur Lancer.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('bwlCanvas');
+    const ctx = canvas.getContext('2d');
+    let bwlBall = { x: 125, y: 360, vy: 0 };
+    let pins = [
+        { x: 125, y: 50, hit: false },
+        { x: 105, y: 70, hit: false }, { x: 145, y: 70, hit: false },
+        { x: 85, y: 90, hit: false }, { x: 125, y: 90, hit: false }, { x: 165, y: 90, hit: false }
+    ];
+    let bwlScore = 0;
+
+    function rollBowl() {
+        if (bwlBall.vy === 0) bwlBall.vy = -6;
+    }
+
+    function updateBwl() {
+        bwlBall.y += bwlBall.vy;
+
+        pins.forEach(p => {
+            if (!p.hit && Math.hypot(bwlBall.x - p.x, bwlBall.y - p.y) < 20) {
+                p.hit = true;
+                bwlScore++;
+                document.getElementById('bwlScore').textContent = bwlScore;
+            }
+        });
+
+        if (bwlBall.y < -20) {
+            bwlBall = { x: 125, y: 360, vy: 0 };
+        }
+
+        ctx.clearRect(0, 0, 250, 400);
+
+        // Lane
+        ctx.fillStyle = '#8b5a2b';
+        ctx.fillRect(50, 0, 150, 400);
+
+        // Pins
+        pins.forEach(p => {
+            if (!p.hit) {
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2); ctx.fill();
+            }
+        });
+
+        // Ball
+        ctx.fillStyle = '#1d9bf0';
+        ctx.beginPath(); ctx.arc(bwlBall.x, bwlBall.y, 12, 0, Math.PI*2); ctx.fill();
+
+        requestAnimationFrame(updateBwl);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (bwlBall.vy === 0) {
+            if (e.key === 'ArrowLeft' && bwlBall.x > 60) bwlBall.x -= 5;
+            if (e.key === 'ArrowRight' && bwlBall.x < 190) bwlBall.x += 5;
+        }
+    });
+
+    updateBwl();
+
+    </script>
+</body>
+</html>

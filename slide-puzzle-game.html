@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taquin (15-Puzzle)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    .sp-tile {
+        width:70px; height:70px; background:#1d9bf0; color:#fff; border-radius:6px;
+        display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; cursor:pointer;
+    }
+    .sp-tile.empty { background:transparent; cursor:default; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Taquin (15-Puzzle)</h1>
+
+    <div class="stats">
+        <span>Mouvements: <strong id="spMoves">0</strong></span>
+    </div>
+    <div id="spBoard" style="display:grid; grid-template-columns:repeat(4, 70px); gap:6px; background:#1e2732; padding:10px; border-radius:8px;"></div>
+    <div id="spMsg" style="height:25px; margin-top:10px; color:#00ba7c; font-size:1.1rem;"></div>
+    <button class="btn" onclick="initSlidePuzzle()">Mélanger</button>
+    <p class="instructions">Glissez les tuiles pour les remettre dans l'ordre de 1 à 15.</p>
+
+    </div>
+    <script>
+
+    let spGrid = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+    let spMoves = 0;
+
+    function initSlidePuzzle() {
+        spMoves = 0;
+        document.getElementById('spMoves').textContent = spMoves;
+        document.getElementById('spMsg').textContent = '';
+        // Shuffle solvable
+        for (let i = 0; i < 200; i++) {
+            let emptyIdx = spGrid.indexOf(0);
+            let valid = getValidMoves(emptyIdx);
+            let rand = valid[Math.floor(Math.random() * valid.length)];
+            [spGrid[emptyIdx], spGrid[rand]] = [spGrid[rand], spGrid[emptyIdx]];
+        }
+        renderSlidePuzzle();
+    }
+
+    function getValidMoves(idx) {
+        let moves = [];
+        let r = Math.floor(idx / 4), c = idx % 4;
+        if (r > 0) moves.push(idx - 4);
+        if (r < 3) moves.push(idx + 4);
+        if (c > 0) moves.push(idx - 1);
+        if (c < 3) moves.push(idx + 1);
+        return moves;
+    }
+
+    function renderSlidePuzzle() {
+        const board = document.getElementById('spBoard');
+        board.innerHTML = '';
+        spGrid.forEach((val, idx) => {
+            let tile = document.createElement('div');
+            tile.className = 'sp-tile' + (val === 0 ? ' empty' : '');
+            tile.textContent = val !== 0 ? val : '';
+            tile.onclick = () => moveSpTile(idx);
+            board.appendChild(tile);
+        });
+    }
+
+    function moveSpTile(idx) {
+        let emptyIdx = spGrid.indexOf(0);
+        if (getValidMoves(emptyIdx).includes(idx)) {
+            [spGrid[emptyIdx], spGrid[idx]] = [spGrid[idx], spGrid[emptyIdx]];
+            spMoves++;
+            document.getElementById('spMoves').textContent = spMoves;
+            renderSlidePuzzle();
+            if (spGrid.every((v, i) => i === 15 ? v === 0 : v === i + 1)) {
+                document.getElementById('spMsg').textContent = 'Félicitations ! Puzzle résolu !';
+            }
+        }
+    }
+
+    initSlidePuzzle();
+
+    </script>
+</body>
+</html>

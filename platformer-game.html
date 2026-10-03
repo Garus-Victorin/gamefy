@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platformer 2D Mini</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Platformer 2D Mini</h1>
+
+    <div class="stats">Pièces: <strong id="platCoins">0</strong></div>
+    <canvas id="platCanvas" width="380" height="250" style="background:#0f1419; border-radius:8px;"></canvas>
+    <button class="btn" onclick="initPlat()">Recommencer</button>
+    <p class="instructions">Flèches pour sauter et courir sur les plateformes afin de ramasser les pièces d'or.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('platCanvas');
+    const ctx = canvas.getContext('2d');
+    let hero = { x: 20, y: 180, vx: 0, vy: 0, isJumping: false };
+    let platforms = [{ x: 0, y: 220, w: 380 }, { x: 100, y: 160, w: 80 }, { x: 220, y: 110, w: 100 }];
+    let coins = [{ x: 130, y: 130, taken: false }, { x: 260, y: 80, taken: false }];
+    let coinCount = 0;
+
+    function initPlat() {
+        hero = { x: 20, y: 180, vx: 0, vy: 0, isJumping: false };
+        coins.forEach(c => c.taken = false);
+        coinCount = 0;
+        document.getElementById('platCoins').textContent = coinCount;
+    }
+
+    function updatePlat() {
+        hero.vy += 0.5; // gravity
+        hero.x += hero.vx; hero.y += hero.vy;
+
+        // Platform collision
+        hero.isJumping = true;
+        platforms.forEach(p => {
+            if (hero.x + 20 > p.x && hero.x < p.x + p.w && hero.y + 20 >= p.y && hero.y + 20 <= p.y + 10 && hero.vy >= 0) {
+                hero.y = p.y - 20;
+                hero.vy = 0;
+                hero.isJumping = false;
+            }
+        });
+
+        // Coin collection
+        coins.forEach(c => {
+            if (!c.taken && Math.hypot(hero.x - c.x, hero.y - c.y) < 20) {
+                c.taken = true;
+                coinCount++;
+                document.getElementById('platCoins').textContent = coinCount;
+            }
+        });
+
+        ctx.clearRect(0, 0, 380, 250);
+
+        // Platforms
+        ctx.fillStyle = '#273340';
+        platforms.forEach(p => ctx.fillRect(p.x, p.y, p.w, 15));
+
+        // Coins
+        ctx.fillStyle = '#ffd166';
+        coins.forEach(c => {
+            if (!c.taken) { ctx.beginPath(); ctx.arc(c.x, c.y, 6, 0, Math.PI*2); ctx.fill(); }
+        });
+
+        // Hero
+        ctx.fillStyle = '#1d9bf0';
+        ctx.fillRect(hero.x, hero.y, 20, 20);
+
+        requestAnimationFrame(updatePlat);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') hero.vx = 3;
+        if (e.key === 'ArrowLeft') hero.vx = -3;
+        if (e.key === 'ArrowUp' && !hero.isJumping) { hero.vy = -9; hero.isJumping = true; }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') hero.vx = 0;
+    });
+
+    updatePlat();
+
+    </script>
+</body>
+</html>

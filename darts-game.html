@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fléchettes (Darts)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Fléchettes (Darts)</h1>
+
+    <div class="stats">Score total: <strong id="dartScore">0</strong></div>
+    <canvas id="dartCanvas" width="350" height="350" style="background:#161e27; border-radius:8px;"></canvas>
+    <button class="btn" onclick="throwDart()">Lancer Fléchette</button>
+    <p class="instructions">Visez le centre de la cible de fléchettes en mouvement.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('dartCanvas');
+    const ctx = canvas.getContext('2d');
+    let cross = { x: 175, y: 175, vx: 3, vy: 2 };
+    let totalScore = 0;
+
+    function throwDart() {
+        let dist = Math.hypot(cross.x - 175, cross.y - 175);
+        if (dist < 15) totalScore += 50;
+        else if (dist < 40) totalScore += 25;
+        else if (dist < 80) totalScore += 10;
+        document.getElementById('dartScore').textContent = totalScore;
+    }
+
+    function updateDarts() {
+        cross.x += cross.vx; cross.y += cross.vy;
+        if (cross.x < 50 || cross.x > 300) cross.vx *= -1;
+        if (cross.y < 50 || cross.y > 300) cross.vy *= -1;
+
+        ctx.clearRect(0, 0, 350, 350);
+
+        // Target board
+        const rings = [120, 80, 40, 15];
+        const colors = ['#0f1419', '#e7e9ea', '#00ba7c', '#f75c7e'];
+        rings.forEach((r, i) => {
+            ctx.fillStyle = colors[i];
+            ctx.beginPath(); ctx.arc(175, 175, r, 0, Math.PI*2); ctx.fill();
+        });
+
+        // Crosshair
+        ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cross.x, cross.y, 10, 0, Math.PI*2);
+        ctx.moveTo(cross.x - 15, cross.y); ctx.lineTo(cross.x + 15, cross.y);
+        ctx.moveTo(cross.x, cross.y - 15); ctx.lineTo(cross.x, cross.y + 15);
+        ctx.stroke();
+
+        requestAnimationFrame(updateDarts);
+    }
+
+    updateDarts();
+
+    </script>
+</body>
+</html>

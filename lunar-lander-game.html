@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunar Lander</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Lunar Lander</h1>
+
+    <div class="stats">
+        <span>Carburant: <strong id="lFuel">100</strong></span>
+        <span>Vitesse V: <strong id="lVy">0</strong></span>
+    </div>
+    <canvas id="lCanvas" width="400" height="400" style="background:#050811; border-radius:8px;"></canvas>
+    <div id="lMsg" style="height:25px; margin-top:10px; color:#00ba7c; font-size:1.1rem;"></div>
+    <button class="btn" onclick="initLander()">Recommencer</button>
+    <p class="instructions">Flèche Haut pour réacteur principal, Gauche/Droite pour pivoter. Atterrissez doucement !</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('lCanvas');
+    const ctx = canvas.getContext('2d');
+    let lander = { x: 200, y: 50, vx: 0, vy: 0, fuel: 100, angle: 0 };
+    let lActive = true;
+
+    function initLander() {
+        lander = { x: 200, y: 50, vx: 0, vy: 0, fuel: 100, angle: 0 };
+        lActive = true;
+        document.getElementById('lMsg').textContent = '';
+    }
+
+    function updateLander() {
+        if (lActive) {
+            lander.vy += 0.03; // gravity
+            lander.x += lander.vx;
+            lander.y += lander.vy;
+
+            document.getElementById('lFuel').textContent = Math.round(lander.fuel);
+            document.getElementById('lVy').textContent = lander.vy.toFixed(1);
+
+            // Ground check
+            if (lander.y >= 360) {
+                lActive = false;
+                if (Math.abs(lander.vy) < 1.5 && Math.abs(lander.vx) < 1.5) {
+                    document.getElementById('lMsg').textContent = 'Atterrissage réussi ! Bravo !';
+                } else {
+                    document.getElementById('lMsg').textContent = 'CRASH ! Vitesse trop élevée.';
+                }
+            }
+        }
+
+        drawLander();
+        requestAnimationFrame(updateLander);
+    }
+
+    function drawLander() {
+        ctx.clearRect(0, 0, 400, 400);
+        // Ground
+        ctx.fillStyle = '#8b98a5';
+        ctx.fillRect(0, 370, 400, 30);
+        // Pad
+        ctx.fillStyle = '#00ba7c';
+        ctx.fillRect(160, 370, 80, 5);
+
+        // Lander
+        ctx.save();
+        ctx.translate(lander.x, lander.y);
+        ctx.rotate(lander.angle);
+        ctx.fillStyle = '#1d9bf0';
+        ctx.fillRect(-10, -10, 20, 20);
+        ctx.restore();
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (!lActive || lander.fuel <= 0) return;
+        if (e.key === 'ArrowUp') {
+            lander.vy -= 0.1;
+            lander.fuel -= 0.5;
+        }
+        if (e.key === 'ArrowLeft') lander.vx -= 0.05;
+        if (e.key === 'ArrowRight') lander.vx += 0.05;
+    });
+
+    updateLander();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aim Trainer</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    .aim-target { width:30px; height:30px; border-radius:50%; background:#f75c7e; position:absolute; border:2px solid #fff; cursor:pointer; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Aim Trainer</h1>
+
+    <div class="stats">Cibles touchées: <strong id="aimScore">0</strong></div>
+    <div id="aimArea" style="width:350px; height:350px; background:#161e27; border-radius:8px; position:relative; overflow:hidden; cursor:crosshair;"></div>
+    <button class="btn" onclick="initAim()">Démarrer (30s)</button>
+    <p class="instructions">Cliquez sur les cibles rouges dès qu'elles apparaissent !</p>
+
+    </div>
+    <script>
+
+    let aimScore = 0;
+
+    function initAim() {
+        aimScore = 0;
+        document.getElementById('aimScore').textContent = aimScore;
+        spawnAimTarget();
+    }
+
+    function spawnAimTarget() {
+        const area = document.getElementById('aimArea');
+        area.innerHTML = '';
+        let target = document.createElement('div');
+        target.className = 'aim-target';
+        target.style.top = Math.random() * 310 + 'px';
+        target.style.left = Math.random() * 310 + 'px';
+        target.onclick = () => {
+            aimScore++;
+            document.getElementById('aimScore').textContent = aimScore;
+            spawnAimTarget();
+        };
+        area.appendChild(target);
+    }
+
+    initAim();
+
+    </script>
+</body>
+</html>

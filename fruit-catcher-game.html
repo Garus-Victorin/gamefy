@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Catcher</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Fruit Catcher</h1>
+
+    <div class="stats">Score: <strong id="fcScore">0</strong></div>
+    <canvas id="fcCanvas" width="350" height="400" style="background:#161e27; border-radius:8px;"></canvas>
+    <button class="btn" onclick="initFruitCatcher()">Recommencer</button>
+    <p class="instructions">Bougez le panier avec la souris ou les flèches pour attraper les fruits !</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('fcCanvas');
+    const ctx = canvas.getContext('2d');
+    let basket = { x: 140, w: 70, h: 15 };
+    let fruits = [];
+    let fcScore = 0;
+
+    function initFruitCatcher() {
+        fruits = [];
+        fcScore = 0;
+        document.getElementById('fcScore').textContent = fcScore;
+    }
+
+    function updateFC() {
+        if (Math.random() < 0.03) {
+            fruits.push({ x: Math.random() * 330, y: 0, speed: 2 + Math.random() * 3 });
+        }
+
+        ctx.clearRect(0, 0, 350, 400);
+
+        // Basket
+        ctx.fillStyle = '#1d9bf0';
+        ctx.fillRect(basket.x, 370, basket.w, basket.h);
+
+        // Fruits
+        ctx.fillStyle = '#f75c7e';
+        for (let i = fruits.length - 1; i >= 0; i--) {
+            let f = fruits[i];
+            f.y += f.speed;
+            ctx.beginPath(); ctx.arc(f.x, f.y, 10, 0, Math.PI*2); ctx.fill();
+
+            if (f.y >= 370 && f.x >= basket.x && f.x <= basket.x + basket.w) {
+                fcScore += 10;
+                document.getElementById('fcScore').textContent = fcScore;
+                fruits.splice(i, 1);
+            } else if (f.y > 400) {
+                fruits.splice(i, 1);
+            }
+        }
+
+        requestAnimationFrame(updateFC);
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+        let rect = canvas.getBoundingClientRect();
+        basket.x = e.clientX - rect.left - basket.w / 2;
+    });
+
+    updateFC();
+
+    </script>
+</body>
+</html>

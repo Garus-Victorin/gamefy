@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Hockey</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #0f1419;
+            color: #e7e9ea;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { margin-bottom: 15px; color: #1d9bf0; text-align: center; }
+        .game-card {
+            background: #161e27;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            background: #1e2732;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #1d9bf0;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1a8cd8; }
+        .instructions { margin-top: 10px; font-size: 0.9rem; color: #8b98a5; text-align: center; }
+
+    </style>
+</head>
+<body>
+    <div class="game-card">
+        <h1>Air Hockey</h1>
+
+    <div class="stats">
+        <span>Joueur: <strong id="ahScoreP">0</strong> | IA: <strong id="ahScoreIA">0</strong></span>
+    </div>
+    <canvas id="ahCanvas" width="350" height="450" style="background:#0f1419; border:3px solid #1d9bf0; border-radius:10px;"></canvas>
+    <button class="btn" onclick="initAirHockey()">Nouvelle partie</button>
+    <p class="instructions">Bougez la souris sur la table pour contrôler votre palet bleu.</p>
+
+    </div>
+    <script>
+
+    const canvas = document.getElementById('ahCanvas');
+    const ctx = canvas.getContext('2d');
+    let puck = { x: 175, y: 225, vx: 3, vy: 4, r: 12 };
+    let player = { x: 175, y: 380, r: 22 };
+    let ai = { x: 175, y: 70, r: 22 };
+    let sP = 0, sIA = 0;
+
+    function initAirHockey() {
+        puck = { x: 175, y: 225, vx: 3, vy: 4, r: 12 };
+        sP = 0; sIA = 0;
+        document.getElementById('ahScoreP').textContent = sP;
+        document.getElementById('ahScoreIA').textContent = sIA;
+    }
+
+    function updateAH() {
+        puck.x += puck.vx; puck.y += puck.vy;
+
+        // Walls
+        if (puck.x - puck.r < 0 || puck.x + puck.r > 350) puck.vx *= -1;
+
+        // Goal
+        if (puck.y < 0) { sP++; resetPuck(); }
+        if (puck.y > 450) { sIA++; resetPuck(); }
+
+        // AI tracking
+        ai.x += (puck.x - ai.x) * 0.08;
+
+        // Collisions
+        [player, ai].forEach(p => {
+            let dx = puck.x - p.x, dy = puck.y - p.y;
+            let dist = Math.hypot(dx, dy);
+            if (dist < puck.r + p.r) {
+                puck.vx = (dx / dist) * 6;
+                puck.vy = (dy / dist) * 6;
+            }
+        });
+
+        drawAH();
+        requestAnimationFrame(updateAH);
+    }
+
+    function resetPuck() {
+        puck = { x: 175, y: 225, vx: (Math.random()-0.5)*6, vy: 4, r: 12 };
+        document.getElementById('ahScoreP').textContent = sP;
+        document.getElementById('ahScoreIA').textContent = sIA;
+    }
+
+    function drawAH() {
+        ctx.clearRect(0, 0, 350, 450);
+
+        // Center line
+        ctx.strokeStyle = '#273340';
+        ctx.beginPath(); ctx.moveTo(0, 225); ctx.lineTo(350, 225); ctx.stroke();
+
+        // Goal posts
+        ctx.fillStyle = '#00ba7c';
+        ctx.fillRect(100, 0, 150, 6);
+        ctx.fillRect(100, 444, 150, 6);
+
+        // Puck
+        ctx.fillStyle = '#f75c7e';
+        ctx.beginPath(); ctx.arc(puck.x, puck.y, puck.r, 0, Math.PI*2); ctx.fill();
+
+        // Player
+        ctx.fillStyle = '#1d9bf0';
+        ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
+
+        // AI
+        ctx.fillStyle = '#ffd166';
+        ctx.beginPath(); ctx.arc(ai.x, ai.y, ai.r, 0, Math.PI*2); ctx.fill();
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+        let rect = canvas.getBoundingClientRect();
+        player.x = e.clientX - rect.left;
+        player.y = Math.max(225, e.clientY - rect.top);
+    });
+
+    updateAH();
+
+    </script>
+</body>
+</html>
